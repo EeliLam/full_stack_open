@@ -4,9 +4,7 @@ const Blog = require('../models/blog')
 const User = require('../models/user')
 
 blogRouter.get('/', async (request, response) => {
-    const result = await Blog
-        .find({})
-        .populate('user', { blogs: 0 })
+    const result = await Blog.find({}).populate('user', { id: 1, username: 1, name: 1 })
 
     response.json(result)
 })
@@ -57,6 +55,7 @@ blogRouter.post('/', async (request, response) => {
 blogRouter.delete('/:id', async (request, response) => {
     try {
         const blog = await Blog.findById(request.params.id)
+        const user = await User.findById(decodedToken.id)
 
         if(!blog) {
             return response.status(204).json({ error: 'invalid blog id' })
@@ -75,7 +74,10 @@ blogRouter.delete('/:id', async (request, response) => {
             return response.status(401).json({ error: 'token corresponds to wrong user' })
         }
 
-        blog.remove()
+        await blog.remove()
+        user.blogs = user.blogs.filter(b => b.id.toString() !== request.params.id.toString())
+        await user.save()
+
         response.status(204).end()
     } catch(e) { console.log(e) }
 })
@@ -92,10 +94,14 @@ blogRouter.put('/:id', async (request, response) => {
         title: request.body.title,
         author: request.body.author,
         url: request.body.url,
-        likes: request.body.likes
+        likes: request.body.likes,
+        user: request.body.user.id
     }
 
-    const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true })
+    const updatedBlog = await Blog
+        .findByIdAndUpdate(request.params.id, blog, { new: true })
+        .populate('user', { id: 1, username: 1, name: 1 })
+    //console.log('updated', updatedBlog)
     response.json(updatedBlog)
 })
 
