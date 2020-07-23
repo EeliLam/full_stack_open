@@ -1,61 +1,63 @@
-import React, { useState } from 'react'
-import PropTypes from 'prop-types'
+import React from 'react'
+import { useDispatch } from 'react-redux'
+import { createBlog } from './../reducers/blogReducer'
+import { setNotification } from './../reducers/notificationReducer'
+import { useField } from './../hooks/index'
+import { TextField, Button } from '@material-ui/core'
 
-const CreateBlogForm = ({ createBlog }) => {
+const CreateBlogForm = ({ toggleRef }) => {
 
-  const [newTitle, setNewTitle] = useState('')
-  const [newAuthor, setNewAuthor] = useState('')
-  const [newUrl, setNewUrl] = useState('')
+  const title = useField('text')
+  const author = useField('text')
+  const url = useField('text')
 
-  const addBlog = (event) => {
+  const dispatch = useDispatch()
+
+  const handleSubmit = (event) => {
     event.preventDefault()
-    createBlog({
-      title: newTitle,
-      author: newAuthor,
-      url: newUrl
-    })
+    toggleRef.current.toggleVisibility()
+    dispatch(createBlog({
+      title: title.value,
+      author: author.value,
+      url: url.value
+    }))
 
-    setNewTitle('')
-    setNewAuthor('')
-    setNewUrl('')
+    dispatch(setNotification(`A new blog: '${title.value}' by ${author.value} added`, false, 3))
+
+    title.reset()
+    author.reset()
+    url.reset()
   }
 
   return (
     <div>
       <h2>Add a new blog</h2>
-      <form onSubmit={addBlog}>
+      <form onSubmit={handleSubmit}>
         <div>
-          title:
-          <input
+          <TextField
+            label='title'
+            {...title.inputProps()}
             id='title'
-            value={newTitle}
-            onChange={({ target }) => setNewTitle(target.value)}
           />
         </div>
         <div>
-          author:
-          <input
+          <TextField
+            label='author'
+            {...author.inputProps()}
             id='author'
-            value={newAuthor}
-            onChange={({ target }) => setNewAuthor(target.value)}
           />
         </div>
         <div>
-          url:
-          <input
+          <TextField
+            label='url'
+            {...url.inputProps()}
             id='url'
-            value={newUrl}
-            onChange={({ target }) => setNewUrl(target.value)}
           />
         </div>
-        <button type="submit">save</button>
+        <Button size='small' variant='outlined' color='primary' type='submit'>save</Button>
       </form>
     </div>
   )
-}
-
-CreateBlogForm.propTypes = {
-  createBlog: PropTypes.func.isRequired
 }
 
 export default CreateBlogForm

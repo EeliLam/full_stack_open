@@ -1,44 +1,41 @@
 import React from 'react'
-import PropTypes from 'prop-types'
+import { login } from './../reducers/userReducer'
+import { useDispatch } from 'react-redux'
+import { useField } from './../hooks/index'
+import { TextField, Button } from '@material-ui/core'
 
-const LoginForm = ({
-  handleSubmit,
-  handleUsernameChange,
-  handlePasswordChange,
-  username,
-  password
-}) => {
+const LoginForm = () => {
+
+  const username = useField('text')
+  const password = useField('password')
+
+  const dispatch = useDispatch()
+
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    dispatch(login(username.value, password.value))
+    username.reset()
+    password.reset()
+  }
+
   return (
     <div>
       <h2>Log in to application</h2>
       <form onSubmit={handleSubmit}>
         <div>
-            username
-          <input
-            value={username}
-            onChange={handleUsernameChange}
-          />
+          <TextField label='username' {...username.inputProps()} />
         </div>
         <div>
-          password
-          <input
-            type="password"
-            value={password}
-            onChange={handlePasswordChange}
-          />
+          <TextField label='password' {...password.inputProps()} />
         </div>
-        <button type="submit">login</button>
+        <div>
+          <Button variant='contained' color='primary' type='submit'>
+            login
+          </Button>
+        </div>
       </form>
     </div>
   )
-}
-
-LoginForm.propTypes = {
-  handleSubmit: PropTypes.func.isRequired,
-  handleUsernameChange: PropTypes.func.isRequired,
-  handlePasswordChange: PropTypes.func.isRequired,
-  username: PropTypes.string.isRequired,
-  password: PropTypes.string.isRequired
 }
 
 export default LoginForm
